@@ -12,7 +12,10 @@ This example may be copied under the terms of the MIT license, see the LICENSE f
 #include <EEPROM.h>
 
 #define NUM_OF_BYTES_SERIAL 4       //Default length to read out the serial buffer.
-
+#define DEBUG 1
+#define PIN_nSS  10
+#define PIN_RESET  9
+                 
 //EEPROM MAP
 #define ADDR_IP 0                   //Start address of the IP address
 #define ADDR_BC 4                   //Start address of the boardcast address
@@ -45,7 +48,7 @@ char serialBuffer[NUM_OF_BYTES_SERIAL];
 // Change ip and mac address for your setup
 byte ip[] = {2, 9, 200, 50};
 byte broadcast[] = {2, 9, 200, 255};
-byte mac[] = {0x04, 0xE9, 0xE5, 0x00, 0x69, 0xEC};
+byte mac[] = {0xFE, 0xB7, 0xBF, 0x4C, 0xB6, 0x41};
 
 // ---- Prototypes
 void checkForSerial();
@@ -55,11 +58,19 @@ void EEPROM_MACAdress(boolean , byte , byte*);
 
 void setup()
 {
+  if(DEBUG)
+  {
   Serial.begin(115200);
   Serial.println("THIEU Art-Net node 8xWS2813 strip");
   Serial.println("Loading settings from EEPROM");
-  
-  
+  }
+
+  pinMode(PIN_RESET, OUTPUT);       // define reset pin as output
+  digitalWrite(PIN_RESET, LOW);     // begin reset the WIZ850io
+  pinMode(PIN_nSS, OUTPUT);         // define nSS(chip select) as output
+  digitalWrite(PIN_nSS, HIGH);      // de-select WIZ850io
+  digitalWrite(PIN_RESET, HIGH);    // end reset pulse
+  //digitalWrite(PIN_nSS, LOW);     // select WIZ850io
   
   artnet.setBroadcast(broadcast);
   artnet.begin(mac, ip);
@@ -67,6 +78,17 @@ void setup()
   leds.begin(ledsPerStrip, displayMemory, drawingMemory, config);
   initTest();
 
+  // Check for Ethernet hardware present
+  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+    Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+    while (true) {
+      delay(1); // do nothing, no point running without Ethernet hardware
+    }
+  }
+  if (Ethernet.linkStatus() == LinkOFF) {
+    Serial.println("Ethernet cable is not connected.");
+  }
+  
   // this will be called for each packet received
   artnet.setArtDmxCallback(onDmxFrame);
 }
