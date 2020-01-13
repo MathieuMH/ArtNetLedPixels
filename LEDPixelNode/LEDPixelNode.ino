@@ -25,9 +25,6 @@
 
 
 #include <Artnet.h>
-#include <Ethernet.h>
-#include <EthernetUdp.h>
-#include <SPI.h>
 #include <FastLED.h>
 
 // --- PIN DEFINITIONS ---
@@ -79,7 +76,7 @@ byte ip[] = {2, 9, 200, 15};
 byte gateway[] = {2, 9, 200, 1};
 byte dns[] = {2, 9, 200, 1};
 byte subnet[] = {255, 0, 0, 0};
-byte broadcast[] = {2, 9, 200, 255};
+byte broadcast[] = {2, 255, 255, 255};
 byte mac[] = {0x72, 0x67, 0xF0, 0xeb, 0x33, 0x30};
 
 void setup()
@@ -154,11 +151,11 @@ void loop()
   artnet.read();
 
   // *** Serial CMD line ***
-  if (Serial.available() > 0) 
-  {
-    inByte = Serial.read();
-    Serial.println(inByte);
-  }
+//  if (Serial.available() > 0) 
+//  {
+//    inByte = Serial.read();
+//    Serial.println(inByte);
+//  }
 
   // *** HAPPY LED ***
   unsigned long currentMillis = millis();
