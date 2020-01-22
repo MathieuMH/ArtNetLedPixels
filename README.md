@@ -7,7 +7,7 @@ The board receives it data from a lighting desk, in our situation (Chamsys MQ500
 # Required Hardware
 The setup consists of the following hardware:
 * Teensy 3.1 or 3.2 (there is basicly no difference for this project)
-* Wiznet Wiz850io (LAN tranceived bases on the WIZ5000)
+* Wiznet Wiz850io (LAN tranceived based on the WIZ5000)
 * Carrierboard (refer to the ArtNet_WS2812B folder, board is drawn in KiCad 5)
 
 # Output
