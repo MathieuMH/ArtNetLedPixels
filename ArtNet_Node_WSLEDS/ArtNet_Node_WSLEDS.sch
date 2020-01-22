@@ -1621,4 +1621,6 @@ Wire Wire Line
 NoConn ~ 5700 6150
 Wire Wire Line
 	4200 4250 4350 4250
+Text Notes 750  800  0    50   ~ 0
+Slaat nergens op, moet aangepast worden.
 $EndSCHEMATC
