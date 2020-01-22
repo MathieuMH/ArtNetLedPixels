@@ -13,16 +13,15 @@
 * GIT :
 *       https://github.com/MathieuMH/ArtNetLedPixels
 *
-* AUTHOR :    Mathieu Hebbrecht       START DATE :    01 May 2019
+* AUTHOR :    Mathieu Hebbrecht       START DATE :    22 Januari 2020
 *
 * CHANGES :
 * REF NO  VERSION   DATE        WHO     DETAIL
-* LPXN    00.01     22/05/2019  MHT     Initial version
+* LPXN    00.01     22/01/2020  MHT     Initial version
 *
 * LICENSE :
 * MIT license, see the LICENSE file for details
 *H*/
-
 
 #include <Artnet.h>
 #include <FastLED.h>
@@ -54,7 +53,7 @@
 #define RELEASE               0       // Significant changes marker (FEATURES)
 #define VERSION               1       // Minor change marker (BUG FIXES)
 #define HAPPY_PULSE           1000    // HAPPY LED Flash interval
-#define NUM_LEDS_PER_STRIP    60      // Number of pixels in each LEDS strip (= output)
+#define NUM_LEDS_PER_STRIP    10      // Number of pixels in each LEDS strip (= output)
 #define NUM_LED_STRIPS        4       // Number of strips connected
 
 int inByte = 0;
@@ -72,10 +71,7 @@ int startUniverse = 0;          // Default Artnet universe (in most cases this i
 int previousDataLength = 0;
 
 // --- Network settings
-byte ip[] = {2, 9, 200, 15};
-byte gateway[] = {2, 9, 200, 1};
-byte dns[] = {2, 9, 200, 1};
-byte subnet[] = {255, 0, 0, 0};
+//byte ip[] = {2, 9, 200, 15};
 byte broadcast[] = {2, 255, 255, 255};
 byte mac[] = {0x72, 0x67, 0xF0, 0xeb, 0x33, 0x30};
 
@@ -84,12 +80,11 @@ void setup()
   // - Set pin directions
   pinMode(HAPPY_LED, OUTPUT);
   pinMode(WIZ_RESET, OUTPUT);
-  pinMode(WIZ_CS, OUTPUT);
   pinMode(WIZ_INT, INPUT);
   pinMode(FRAME_SYNC, INPUT);
   
   // - Serial Init
-  Serial.begin(9600);     // For debug and setup
+  Serial.begin(115200);     // For debug and setup
   Serial.print("LedPixelNode v");
   Serial.print(RELEASE);
   Serial.println("." + VERSION);
@@ -125,9 +120,9 @@ void setup()
   startUpTest();
 
   // - Art-Net Setup
-  Ethernet.begin(mac, ip, dns, gateway, subnet);
+  artnet.begin(mac);
   artnet.setBroadcast(broadcast);
-  artnet.begin();
+  
 
   //Check if Wiz850io is present
   if (Ethernet.hardwareStatus() == EthernetNoHardware) {
@@ -142,7 +137,7 @@ void setup()
 
   // this will be called for each packet received
   artnet.setArtDmxCallback(onDmxFrame);
-  artnet.setArtSyncCallback(onSync);
+  //artnet.setArtSyncCallback(onSync);
 }
 
 void loop()
@@ -150,17 +145,11 @@ void loop()
   // *** Art-Net Reading ***
   artnet.read();
 
-  // *** Serial CMD line ***
-//  if (Serial.available() > 0) 
-//  {
-//    inByte = Serial.read();
-//    Serial.println(inByte);
-//  }
-
   // *** HAPPY LED ***
   unsigned long currentMillis = millis();
   
-  if(currentMillis - previousMillis > HAPPY_PULSE) {
+  if(currentMillis - previousMillis > HAPPY_PULSE) 
+  {
     previousMillis = currentMillis;   
     
     if (ledState == LOW)
@@ -196,10 +185,14 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
     Serial.println("F");
   if(DEBUG >= 2)
     Serial.println("onDmxFrame:: Frame received. Length: " + previousDataLength);
+
+  //In case no sync is receive we do it here. This is assynchronious.
+  FastLED.show();
 }
 
 void onSync(IPAddress remoteIP) 
-{
+{   
+    //This is for synchronious output.
     FastLED.show();
     
     if(DEBUG >= 1)
