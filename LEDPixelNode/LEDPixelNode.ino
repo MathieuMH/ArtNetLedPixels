@@ -80,11 +80,17 @@ void setup()
   // - Set pin directions
   pinMode(HAPPY_LED, OUTPUT);
   pinMode(WIZ_RESET, OUTPUT);
-  pinMode(WIZ_INT, INPUT);
-  pinMode(FRAME_SYNC, INPUT);
+  //pinMode(WIZ_INT, INPUT);
+  //pinMode(FRAME_SYNC, INPUT);
+
+    // Port Init
+  digitalWrite(WIZ_RESET, LOW);   //Start Wiz850io Reset
+  delay(5);
+  digitalWrite(WIZ_RESET, HIGH);   //End Wiz850io Reset
   
   // - Serial Init
   Serial.begin(115200);     // For debug and setup
+  delay(5);
   Serial.print("LedPixelNode v");
   Serial.print(RELEASE);
   Serial.println("." + VERSION);
@@ -99,11 +105,26 @@ void setup()
     Serial.println("Debug Level is set to: " + DEBUG);
   }
 
-  // - FastLed Setup
-  FastLED.addLeds<WS2812B, LED1>(leds, 0, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<WS2812B, LED2>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<WS2812B, LED3>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<WS2812B, LED4>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  artnet.begin(mac);
+  artnet.setBroadcast(broadcast);
+  delay(10);
+
+  //Check if Wiz850io is present
+  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+    Serial.println("No Wiz850io (or 820io) found. Sorry, can't run without hardware. :(");
+    while (true) {
+      delay(1); // do nothing, no point running without Ethernet hardware
+    }
+  }
+  if (Ethernet.linkStatus() == LinkOFF) {
+    Serial.println("Ethernet cable is not connected.");
+  }
+
+    // - FastLed Setup
+  FastLED.addLeds<WS2811, LED1>(leds, 0, NUM_LEDS_PER_STRIP);
+  FastLED.addLeds<WS2811, LED2>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  FastLED.addLeds<WS2811, LED3>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  FastLED.addLeds<WS2811, LED4>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
 //  FastLED.addLeds<WS2812B, LED5>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
 //  FastLED.addLeds<WS2812B, LED6>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
 //  FastLED.addLeds<WS2812B, LED7>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
@@ -118,25 +139,6 @@ void setup()
 
   // - Init test
   startUpTest();
-
-  // - Art-Net Setup
-  if(artnet.begin(mac))
-     Serial.println("Received DCHP address.");
-  else
-    Serial.println("NO DCHP address!");
-  
-  artnet.setBroadcast(broadcast);
-
-  //Check if Wiz850io is present
-  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-    Serial.println("No Wiz850io (or 820io) found. Sorry, can't run without hardware. :(");
-    while (true) {
-      delay(1); // do nothing, no point running without Ethernet hardware
-    }
-  }
-  if (Ethernet.linkStatus() == LinkOFF) {
-    Serial.println("Ethernet cable is not connected.");
-  }
 
   // this will be called for each packet received
   artnet.setArtDmxCallback(onDmxFrame);
@@ -174,21 +176,27 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
       leds[i] = CRGB( data[i * 3], data[i * 3 + 1], data[i * 3 + 2]);
       if(DEBUG >= 3)
       {
-        Serial.print("onDmxFrame:: LED" + led);
-        Serial.print(": R" + leds[i].red);
-        Serial.print(" G" + leds[i].green);
-        Serial.println(" B" + leds[i].blue);
+        Serial.print("onDmxFrame:: LED");
+        Serial.print(i*3);
+        Serial.print(" R");
+        Serial.print(leds[i].red);
+        Serial.print(" G");
+        Serial.print(leds[i].green);
+        Serial.print(" B");
+        Serial.println(leds[i].blue);
       }
     }
 
   }
   previousDataLength = length;
 
-  if(DEBUG >= 1)
+  if(DEBUG == 1)
     Serial.println("F");
-  if(DEBUG >= 2)
-    Serial.println("onDmxFrame:: Frame received. Length: " + previousDataLength);
-
+  if(DEBUG == 2)
+  {
+    Serial.print("onDmxFrame:: Frame received. Length: ");
+    Serial.println(previousDataLength);
+  }
   //In case no sync is receive we do it here. This is assynchronious.
   FastLED.show();
 }
