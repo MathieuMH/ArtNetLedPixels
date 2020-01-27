@@ -120,9 +120,12 @@ void setup()
   startUpTest();
 
   // - Art-Net Setup
-  artnet.begin(mac);
-  artnet.setBroadcast(broadcast);
+  if(artnet.begin(mac))
+     Serial.println("Received DCHP address.");
+  else
+    Serial.println("NO DCHP address!");
   
+  artnet.setBroadcast(broadcast);
 
   //Check if Wiz850io is present
   if (Ethernet.hardwareStatus() == EthernetNoHardware) {
