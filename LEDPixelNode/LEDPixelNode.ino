@@ -23,8 +23,11 @@
 * MIT license, see the LICENSE file for details
 *H*/
 
-#include <Artnet.h>
+#define FASTLED_ALLOW_INTERRUPTS 0
+//#define USE_OCTOWS2811
+//#include <OctoWS2811.h>
 #include <FastLED.h>
+#include <Artnet.h>
 
 // --- PIN DEFINITIONS ---
 #define LED1          14
@@ -43,18 +46,18 @@
 #define WIZ_CS        0
 #define WIZ_RESET     1
 #define WIZ_INT       16
-#define HAPPY_LED     14
+#define HAPPY_LED     13
 #define FRAME_SYNC    17
 #define UART_RX       4
 #define UART_TX       3
 
 // --- GENERIC DEFINITIONS
-#define DEBUG                 1       // 0=only operation commands, no debug ; 1=high level debug ; 2=low level debug
+#define DEBUG                 0       // 0=only operation commands, no debug ; 1=high level debug ; 2=low level debug
 #define RELEASE               0       // Significant changes marker (FEATURES)
 #define VERSION               1       // Minor change marker (BUG FIXES)
 #define HAPPY_PULSE           1000    // HAPPY LED Flash interval
-#define NUM_LEDS_PER_STRIP    10      // Number of pixels in each LEDS strip (= output)
-#define NUM_LED_STRIPS        4       // Number of strips connected
+#define NUM_LEDS_PER_STRIP    40      // Number of pixels in each LEDS strip (= output)
+#define NUM_LED_STRIPS        1       // Number of strips connected
 
 int inByte = 0;
 long previousMillis = 0;
@@ -78,7 +81,7 @@ byte mac[] = {0x72, 0x67, 0xF0, 0xeb, 0x33, 0x30};
 void setup()
 {
   // - Set pin directions
-  pinMode(HAPPY_LED, OUTPUT);
+  //pinMode(HAPPY_LED, OUTPUT);
   pinMode(WIZ_RESET, OUTPUT);
   //pinMode(WIZ_INT, INPUT);
   //pinMode(FRAME_SYNC, INPUT);
@@ -102,7 +105,8 @@ void setup()
     {
       ; // wait for serial port to connect. Needed for native USB port only
     }
-    Serial.println("Debug Level is set to: " + DEBUG);
+    Serial.print("Debug Level is set to: ");
+    Serial.println(DEBUG);
   }
 
   artnet.begin(mac);
@@ -121,10 +125,10 @@ void setup()
   }
 
     // - FastLed Setup
-  FastLED.addLeds<WS2811, LED1>(leds, 0, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<WS2811, LED2>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<WS2811, LED3>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<WS2811, LED4>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  FastLED.addLeds<WS2811, LED2>(leds, 0, NUM_LEDS_PER_STRIP);
+  //FastLED.addLeds<WS2811, LED2>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  //FastLED.addLeds<WS2811, LED3>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  //FastLED.addLeds<WS2811, LED4>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
 //  FastLED.addLeds<WS2812B, LED5>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
 //  FastLED.addLeds<WS2812B, LED6>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
 //  FastLED.addLeds<WS2812B, LED7>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
@@ -150,20 +154,20 @@ void loop()
   // *** Art-Net Reading ***
   artnet.read();
 
-  // *** HAPPY LED ***
-  unsigned long currentMillis = millis();
-  
-  if(currentMillis - previousMillis > HAPPY_PULSE) 
-  {
-    previousMillis = currentMillis;   
-    
-    if (ledState == LOW)
-      ledState = HIGH;
-    else
-      ledState = LOW;
-    
-    digitalWrite(HAPPY_LED, ledState);
-  }
+//  // *** HAPPY LED ***
+//  unsigned long currentMillis = millis();
+//  
+//  if(currentMillis - previousMillis > HAPPY_PULSE) 
+//  {
+//    previousMillis = currentMillis;   
+//    
+//    if (ledState == LOW)
+//      ledState = HIGH;
+//    else
+//      ledState = LOW;
+//    
+//    digitalWrite(HAPPY_LED, ledState);
+//  }
 }
 
 void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* data, IPAddress remoteIP)
